@@ -202,6 +202,37 @@ class AdHoc_Wireless_Net():
         plt.show()
         return
 
+    def moving_layout(self):
+        # ensure the network is cleared
+        #assert np.all(self.powers == np.zeros([self.n_bands, self.n_nodes]))
+        #assert np.all(self.nodes_on_bands == np.zeros([self.n_bands, self.n_nodes]))
+        #self.used_bands = np.zeros(self.n_bands)
+        txs_locs = self.layout_setting['txs_rxs_length_ratios'][0] * self.field_length
+        rxs_locs = self.layout_setting['txs_rxs_length_ratios'][1] * self.field_length
+        assert np.shape(txs_locs) == np.shape(rxs_locs) == (self.n_flows, 2)
+        self.nodes_locs = np.concatenate([txs_locs, rxs_locs], axis=0)
+        for index, (i, j) in enumerate(itertools.product(range(3), range(3))):
+            x = np.random.uniform(low=i / 3 * self.field_length, high=(i + 1) / 3 * self.field_length,
+                                  size=[self.layout_setting["mobile_nodes_distrib"][index], 1])
+            y = np.random.uniform(low=j / 3 * self.field_length, high=(j + 1) / 3 * self.field_length,
+                                  size=[self.layout_setting["mobile_nodes_distrib"][index], 1])
+            self.nodes_locs = np.concatenate([self.nodes_locs, np.concatenate([x, y], axis=1)], axis=0)
+        assert np.shape(self.nodes_locs) == (self.n_nodes, 2)
+        self.nodes_distances = squareform(pdist(self.nodes_locs))
+        assert np.min(np.eye(self.n_nodes) + self.nodes_distances) > 0
+        # compute channel losses based on ITU-1411 path loss model
+        nodes_distances_tmp = self.nodes_distances + np.eye(self.n_nodes)
+        signal_lambda = 2.998e8 / CARRIER_FREQUENCY
+        Rbp = 4 * TX_HEIGHT * RX_HEIGHT / signal_lambda
+        Lbp = abs(20 * np.log10(np.power(signal_lambda, 2) / (8 * np.pi * TX_HEIGHT * RX_HEIGHT)))
+        sum_term = 20 * np.log10(nodes_distances_tmp / Rbp)
+        Tx_over_Rx = Lbp + 6 + sum_term + ((nodes_distances_tmp > Rbp).astype(int)) * sum_term
+        self.channel_losses = np.power(10, (-Tx_over_Rx / 10))  # convert from decibel to absolute
+        # Set self-to-self path loss to zero, corresponding to no self-interference contribution
+        self.channel_losses *= (1 - np.eye(self.n_nodes))
+        assert np.shape(self.channel_losses) == np.shape(self.nodes_distances)
+        return
+
 if __name__ == "__main__":
     adhocnet = AdHoc_Wireless_Net()
     ax = plt.gca()
