@@ -45,39 +45,36 @@ def method_caller(agent, method, visualize_axis=None):
 # Perform a number of rounds of sequential routing
 def sequential_routing( agents, method, adhocnet):
     # 1st round routing, just with normal order
-    rates = [None]*len(agents)
-    num = 0
-
     for agent in agents:
         assert len(agent.flow.get_links()) == 0, "Sequential routing should operate on fresh starts!"
         while not agent.flow.first_packet():
             method_caller(agent, method)
+
     for agent in agents:
-        initial_index = agent.flow.deliver_index
-        initial_time = time.time()
+        prev_num_pkt_reach = 0
+        prev_num_pkt_sent = 0
         previous_rate = 0
         current_rate = 0
+
         while not agent.flow.destination_reached():
             adhocnet.moving_layout()#moving layout
-            current_time = time.time()
-            time_delta = abs(current_time - initial_time)
+            current_num_pkt_sent = agent.flow.deliver_index
+            pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
+            num_pkt_reach = agent.flow.number_reached_packets()
 
-            if (time_delta >= 3):
-                current_index = agent.flow.deliver_index
-                current_rate = (current_index - initial_index) / time_delta
+            if (pkt_sent_delta == 50):
+                current_rate = (num_pkt_reach - prev_num_pkt_reach) / pkt_sent_delta
                 if(previous_rate == 0):
                     previous_rate = current_rate
-                #rates[num].append([current_index,current_rate])
+
                 if (current_rate < previous_rate):
                     print("bottleneck!!!")
-                    rates[num] = current_rate
-                #init
+
+                prev_num_pkt_reach = num_pkt_reach
+                prev_num_pkt_sent = current_num_pkt_sent
                 previous_rate = current_rate
-                initial_index = current_index
-                initial_time = current_time
 
             method_caller(agent, method)
-        num+=1
     # compute bottleneck SINR to determine the routing for the sequential rounds
     for i in range(N_ROUNDS-1):
         bottleneck_rates = []
@@ -96,15 +93,14 @@ def sequential_routing( agents, method, adhocnet):
                 method_caller(agent, method)
     for agent in agents:
         agent.process_links(memory=None)
-    return rates
+    return
 
 def evaluate_routing(adhocnet, agents, method, n_layouts):
     assert adhocnet.n_flows == len(agents)
     results = []
     for i in range(n_layouts):
         adhocnet.update_layout()
-        rates = sequential_routing(agents, method,adhocnet)
-        print(rates)
+        sequential_routing(agents, method,adhocnet)
         for agent in agents:
             results.append([agent.flow.bottleneck_rate, len(agent.flow.get_links()),
                             agent.flow.get_number_of_reprobes(), agent.flow.number_reached_packets(),
