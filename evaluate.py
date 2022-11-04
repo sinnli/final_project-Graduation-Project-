@@ -69,7 +69,9 @@ def sequential_routing( agents, method, adhocnet):
 
                 if (current_rate < previous_rate):
                     print("bottleneck!!!")
-
+                    # call function that deals with the bottelneck
+                    agent.process_links_find_bottleneck
+                    print("the index in links : ",agent.get_bottlencklink_index())
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
                 previous_rate = current_rate
