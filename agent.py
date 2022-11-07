@@ -357,38 +357,22 @@ class Agent():
         return
 
 
-    def process_links_find_bottleneck(self, memory):
-        min_rate = 10000
-        assert self.flow.destination_reached()
+    def process_links_find_bottleneck(self):
+      #  assert self.flow.destination_reached()
         links = self.flow.get_links()
-        transactions, rates_onwards, SINRs_onwards = [], [], []
+        rates_onwards = []
         # process the last hop
-        tx, band, rx, state, action = links[-1]
+        tx, band, rx, _, _ = links[-1]
         assert rx == self.flow.dest and tx != rx
+
         # process links before the last hop
-        tot_power = 0
-        j =len(links);
-        for tx, band, rx, state, action in links[::-1]:
-            j-=1
-            if tx != rx: # not a reprobe transaction
-                rate, SINR, _, power = self.adhocnet.compute_link(tx=tx, band=band, rx=rx)
-                if SINR < 0.5:
-                    packet_id = action[1][2]
-                    self.flow.reach_in_time[packet_id] = False
-                tot_power += power
+        for tx, band, rx, _, _ in links[::]:
+            if tx != rx:  # not a reprobe transaction
+                rate, _, _, _ = self.adhocnet.compute_link(tx=tx, band=band, rx=rx)
                 rates_onwards.append(rate)
-                SINRs_onwards.append(SINR)
-                if min_rate > rate:
-                    min_rate= rate
-                    self.bottleneck_link_index = j
-            reward = self.compute_reward(tx, rx, rate, action)
-            whether_done = (rx==self.flow.dest)
-            transactions.append((state, action, reward, whether_done))
-        self.flow.bottleneck_rate = np.min(rates_onwards)
-        self.flow.tot_power = tot_power
-        if memory!=None: # have to compare to None, since replay memory object has __len__() defined, empty would result in false
-            for transaction in transactions[::-1]: # ordering matters within the replay buffer
-                memory.add(transaction)
+
+        # self.flow.bottleneck_rate = np.min(rates_onwards)
+        self.bottleneck_link_index = np.argmin(rates_onwards)
         return
 
     def get_bottlenecklink_index(self):

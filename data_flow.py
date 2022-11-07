@@ -29,6 +29,7 @@ class Data_Flow():
         self._n_reprobes = 0  # number of reprobes during routing this flow
         self.plot_color = FLOW_COLORS[flow_id]
 
+
     def add_link(self, tx, band, rx, state, action):  # return true if this link end a packet.
         assert tx == self.frontier_node
         deliver_packet, _ = self.deliver_packet()
@@ -137,3 +138,5 @@ class Data_Flow():
         self.bottleneck_rate = None
         self._n_reprobes = 0
         return
+
+

@@ -57,7 +57,7 @@ def sequential_routing( agents, method, adhocnet):
         current_rate = 0
 
         while not agent.flow.destination_reached():
-            adhocnet.moving_layout()#moving layout
+           # adhocnet.moving_layout()#moving layout
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
@@ -70,8 +70,8 @@ def sequential_routing( agents, method, adhocnet):
                 if (current_rate < previous_rate):
                     print("bottleneck!!!")
                     # call function that deals with the bottelneck
-                    agent.process_links_find_bottleneck
-                    print("the index in links : ",agent.get_bottlencklink_index())
+                    agent.process_links_find_bottleneck()
+                    print("the index in links : ",agent.get_bottlenecklink_index())
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
                 previous_rate = current_rate
@@ -86,7 +86,7 @@ def sequential_routing( agents, method, adhocnet):
         ordering = np.argsort(bottleneck_rates)[::-1]
         for agent_id in ordering:  # new round routing
             agent = agents[agent_id]
-            agent.reset()
+            agent.reset() #causese
             while not agent.flow.first_packet():
                 method_caller(agent, method)
         for agent_id in ordering:
