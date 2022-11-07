@@ -42,6 +42,27 @@ def method_caller(agent, method, visualize_axis=None):
         exit(1)
     return
 
+#find alternative route to fix bottleneck in flow
+def find_alt_route(adhocnet, method, main_agent, index): #num of flows + former flow id
+    #find flow_ids, source, destination 
+    alt_flow = Data_Flow(flow_id= flow_ids, src= source, dest= destination)
+    
+    packet_id = 1
+    amount = np.random.randint(data_size[0], data_size[1])
+    deadline = np.random.randint(deadline_time[0], deadline_time[1])
+    packet = [amount, deadline, packet_id]
+    
+    alt_flow.add_packet(packet)
+    alt_agent = agent.Agent(adhocnet, alt_flow) 
+    
+    #know that agent is configured we find alt route using ddqn
+    while not alt_agent.flow.destination_reached():
+        method_caller(alt_agent, method)
+        
+    #take new oute and add to old one
+    print(alt_agent.flows.get_links())
+    return
+
 # Perform a number of rounds of sequential routing
 def sequential_routing( agents, method, adhocnet):
     # 1st round routing, just with normal order
