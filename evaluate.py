@@ -9,6 +9,7 @@ from system_parameters import *
 import argparse
 import matplotlib.gridspec as gridspec
 import matplotlib.cm as cm
+from data_flow import Data_Flow
 import time
 # 'DDQN_Q_Novel',
 METHODS = ['Max Reward', 'Closest to Destination', 'Best Direction', "Least Interfered", 'Strongest Neighbor', 'Largest Data Rate', 'Destination Directly']
@@ -42,24 +43,28 @@ def method_caller(agent, method, visualize_axis=None):
         exit(1)
     return
 
-#find alternative route to fix bottleneck in flow
-def find_alt_route(adhocnet, method, main_agent, index): #num of flows + former flow id
-    #find flow_ids, source, destination 
-    alt_flow = Data_Flow(flow_id= flow_ids, src= source, dest= destination)
-    
+
+# find alternative route to fix bottleneck in flow
+def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + former flow id
+    # find flow_ids, source, destination
+    link = main_agent.flow.get_links()[index]
+    # self._links.append((tx, band, rx, state, action))
+    flow_ids = adhocnet.get_n_flows()
+    adhocnet.add_if_not_len(flow_ids+1, link[2], link[0])
     packet_id = 1
     amount = np.random.randint(data_size[0], data_size[1])
     deadline = np.random.randint(deadline_time[0], deadline_time[1])
     packet = [amount, deadline, packet_id]
-    
+
+    alt_flow = adhocnet.get_flow(flow_ids+1)
     alt_flow.add_packet(packet)
-    alt_agent = agent.Agent(adhocnet, alt_flow) 
-    
-    #know that agent is configured we find alt route using ddqn
+    alt_agent = agent.Agent(adhocnet, flow_ids+1)
+
+    # know that agent is configured we find alt route using ddqn
     while not alt_agent.flow.destination_reached():
         method_caller(alt_agent, method)
-        
-    #take new oute and add to old one
+
+    # take new oute and add to old one
     print(alt_agent.flows.get_links())
     return
 
@@ -78,7 +83,7 @@ def sequential_routing( agents, method, adhocnet):
         current_rate = 0
 
         while not agent.flow.destination_reached():
-           # adhocnet.moving_layout()#moving layout
+            #adhocnet.moving_layout()#moving layout
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
@@ -93,6 +98,9 @@ def sequential_routing( agents, method, adhocnet):
                     # call function that deals with the bottelneck
                     agent.process_links_find_bottleneck()
                     print("the index in links : ",agent.get_bottlenecklink_index())
+                    # find alternative route for the bottelneck link
+                    find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
+
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
                 previous_rate = current_rate
