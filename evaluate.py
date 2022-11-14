@@ -56,15 +56,15 @@ def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + forme
     deadline = np.random.randint(deadline_time[0], deadline_time[1])
     packet = [amount, deadline, packet_id]
 
-    alt_flow = adhocnet.get_flow(flow_ids+1)
+    alt_flow = adhocnet.get_flow(flow_ids)
     alt_flow.add_packet(packet)
-    alt_agent = agent.Agent(adhocnet, flow_ids+1)
+    alt_agent = agent.Agent(adhocnet, flow_ids) # the flow-index of the flows is in a list (begins with zero)
 
     # know that agent is configured we find alt route using ddqn
     while not alt_agent.flow.destination_reached():
         method_caller(alt_agent, method)
 
-    # take new oute and add to old one
+    # take new out and add to old one
     print(alt_agent.flows.get_links())
     return
 
