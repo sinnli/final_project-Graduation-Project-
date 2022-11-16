@@ -8,8 +8,10 @@ import time
 FLOW_COLORS = ['r', 'g', 'b']*10
 
 class Data_Flow():
-    def __init__(self, flow_id, src, dest):
-        self.flow_id = flow_id
+    def __init__(self, flow_id, src, dest, alt_flag = 0):
+        if alt_flag==0:
+            self.flow_id = flow_id
+            self.plot_color = FLOW_COLORS[flow_id]
         self.src = src
         self.dest = dest
         self._links = []
@@ -27,7 +29,7 @@ class Data_Flow():
         self.tot_power = 0
         self.test_time = time.time()
         self._n_reprobes = 0  # number of reprobes during routing this flow
-        self.plot_color = FLOW_COLORS[flow_id]
+
 
 
     def add_link(self, tx, band, rx, state, action):  # return true if this link end a packet.
@@ -139,4 +141,15 @@ class Data_Flow():
         self._n_reprobes = 0
         return
 
+    def get_src(self):
+        return self.src
 
+    def get_dest(self):
+        return self.dest
+
+    def set_src(self,src):
+        self.src = src
+        return
+    def set_dest(self,dest):
+        self.dest = dest
+        return

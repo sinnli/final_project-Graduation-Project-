@@ -236,14 +236,6 @@ class AdHoc_Wireless_Net():
     def get_n_flows(self):
         return self.n_flows
 
-    def add_if_not_len(self,flow_id,rx,tx):
-        if (len(self.flows)<flow_id):
-            self.flows.append(Data_Flow(flow_id, rx, tx))
-        return
-
-    def get_flow(self,flow_id):
-        return self.flows[flow_id]
-
 
 
 if __name__ == "__main__":

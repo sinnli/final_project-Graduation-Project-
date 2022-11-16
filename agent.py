@@ -7,6 +7,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import sys
+
+from data_flow import Data_Flow
+
 sys.path.append("DQN/")
 import dqn
 import os
@@ -17,12 +20,15 @@ import time
 BAND_LINESTYLES = ['-', '-.', '--', ':', (0, (5,10)), (0, (5,1)), (0, (3,1,1,1)), (0, (3,1,1,1,1,1))]
 
 class Agent():
-    def __init__(self, adhocnet, flow_id):
+    def __init__(self, adhocnet, flow_id, alt_flag = 0 ):
 
         self.bottleneck_link_index =0
         self.adhocnet = adhocnet
-        self.id = flow_id # the data flow this agent corresponds to
-        self.flow = adhocnet.flows[flow_id]
+        self.id = flow_id  # the data flow this agent corresponds to
+        if (alt_flag==0):
+             self.flow = adhocnet.flows[flow_id]
+        else:
+            self.flow = Data_Flow(1,1,1,1)
         self.counter = 0
         self.test_time = time.time()
         self.flow.exclude_nodes = np.delete(np.arange(self.adhocnet.n_flows*2), self.flow.dest) # can delete by index
@@ -41,11 +47,18 @@ class Agent():
             self._main_net.load_state_dict(torch.load(self._model_path))
             self._target_net.load_state_dict(torch.load(self._model_path))
         else:
-            print("Agent {}: No pre-trained model found. Working from scratch.".format(self.id))
-        print("Initialized agent for flow {}!".format(flow_id))
+            if (alt_flag==0):
+                print("Agent {}: No pre-trained model found. Working from scratch.".format(self.id))
+        if (alt_flag==0):
+            print("Initialized agent for flow {}!".format(flow_id))
+        else:
+            print("Inititalized alternative agent.")
 
-    def reset(self):
-        self.adhocnet.clear_flow(self.id)
+    def reset(self,alt_flag = 0):
+        if alt_flag==0:
+            self.adhocnet.clear_flow(self.id)
+        else:
+            self.flow.reset()
         self.flow.exclude_nodes = np.delete(np.arange(self.adhocnet.n_flows*2), self.flow.dest) # can delete by index
         return
 
@@ -64,9 +77,12 @@ class Agent():
         self._target_net.load_state_dict(self._main_net.state_dict())
         return
 
-    def save_dqn_model(self):
+    def save_dqn_model(self,alt_flag = 0):
         torch.save(self._main_net.state_dict(), self._model_path)
-        print("Agent {}: Saved DQN model.".format(self.id))
+        if alt_flag==0:
+            print("Agent {}: Saved DQN model.".format(self.id))
+        else:
+            print("Alternative Agent saved.")
         return
 
     def route_epsilon_greedy(self, epsilon):
@@ -377,5 +393,8 @@ class Agent():
 
     def get_bottlenecklink_index(self):
         return self.bottleneck_link_index
+
+    def get_alt_flow(self):
+        return self.flow
 
 
