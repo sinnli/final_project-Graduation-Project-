@@ -218,13 +218,13 @@ def route_destination_directly(agent):
                             rx=agent.flow.dest, state=np.zeros(agent.state_dim), action=action)
     return
 
-def route_neighbor_with_largest_reward(agent):
+def route_neighbor_with_largest_reward(agent,alt_flag = 0):
     packet, _ = agent.flow.deliver_packet()
     first_packet = agent.flow.first_packet()
     if not first_packet:
         next_link = agent.flow.next_link()
         agent.adhocnet.add_link(flow_id=agent.id, tx=next_link[0], band=next_link[1], \
-                                rx=next_link[2], state=next_link[3], action=next_link[4])
+                                rx=next_link[2], state=next_link[3], action=next_link[4],alt_flag = 0)
         #agent.adhocnet.add_counter()
         return
     available_bands = agent.adhocnet.get_available_bands(agent.flow.frontier_node)

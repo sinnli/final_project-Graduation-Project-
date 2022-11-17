@@ -77,9 +77,11 @@ class AdHoc_Wireless_Net():
         self.n_flows = self.layout_setting['n_flows']
         self.transmit_power = self.layout_setting['transmit_power']
         self.flows = []
+        self.alt_flows = []
         for i in range(self.n_flows):
             destination = np.random.randint(i+1, self.n_flows*2-1)
             self.flows.append(Data_Flow(flow_id=i, src=i, dest=destination))
+            self.alt_flows.append(Data_Flow(flow_id=i,src = 1,dest = 1))
             packet_id = 1
             for j in range(num_packets):  # initial packets for each flow
                 amount = np.random.randint(data_size[0], data_size[1])
@@ -129,18 +131,23 @@ class AdHoc_Wireless_Net():
         available_bands = np.where(self.nodes_on_bands[:,node_id]==0)[0]
         return available_bands
 
-    def add_link(self, flow_id, tx, band, rx, state, action):
-        if self.flows[flow_id].first_packet():
+    def add_link(self, flow_id, tx, band, rx, state, action,alt_flag = 0):
+        if alt_flag==1:
+            flow = self.alt_flows[flow_id]
+        else:
+            flow = self.flows[flow_id]
+
+        if flow.first_packet():
             # assert self.nodes_on_bands[band, tx] == self.nodes_on_bands[band, rx] == 0
             # assert self.powers[band, tx] == self.powers[band, rx] == 0
-            if tx != rx:  # not a reprobe
-                level = action[0] // nodes_explored
-                power = self.transmit_power / (level+1)
-                self.powers[band, tx] = power
-                self.nodes_on_bands[band, tx] = 1
-                self.nodes_on_bands[band, rx] = 1
-                self.used_bands[band] += 1
-        self.flows[flow_id].add_link(tx, band, rx, state, action)
+                if tx != rx:  # not a reprobe
+                    level = action[0] // nodes_explored
+                    power = self.transmit_power / (level+1)
+                    self.powers[band, tx] = power
+                    self.nodes_on_bands[band, tx] = 1
+                    self.nodes_on_bands[band, rx] = 1
+                    self.used_bands[band] += 1
+                flow.add_link(tx, band, rx, state, action)
         return
 
     def get_remain_energy(self):
@@ -233,8 +240,7 @@ class AdHoc_Wireless_Net():
         assert np.shape(self.channel_losses) == np.shape(self.nodes_distances)
         return
 
-    def get_n_flows(self):
-        return self.n_flows
+
 
 
 

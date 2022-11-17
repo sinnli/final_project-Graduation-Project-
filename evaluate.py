@@ -19,11 +19,11 @@ METHOD_PLOT_COLORS = cm.rainbow(np.linspace(1,0,len(METHODS)))
 # PLOT_TYPE = "SumRate" "Rate" "Reach"
 PLOT_TYPE = "Rate"
 
-def method_caller(agent, method, visualize_axis=None):
+def method_caller(agent, method, visualize_axis=None,alt_flag = 0):
     if method == 'DDQN_Q_Novel':
         agent.route_DDRQN(visualize_axis)
     elif method == 'Max Reward':
-        agent.route_neighbor_with_largest_reward()
+        agent.route_neighbor_with_largest_reward(alt_flag)
     elif method == 'DDQN Lowest Interference':
         agent.route_DDRQN_with_lowest_interference_band()
     elif method == 'Strongest Neighbor':
@@ -54,17 +54,17 @@ def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + forme
     deadline = np.random.randint(deadline_time[0], deadline_time[1])
     packet = [amount, deadline, packet_id]
 
-    alt_id = adhocnet.get_n_flows()
+    alt_id = agent.get_flow_id()
 
     alt_agent = agent.Agent(adhocnet,alt_id,1)  #without flow id
     alt_flow = alt_agent.get_alt_flow()
-    alt_flow.set_src = link[2]
-    alt_flow.set_dest = link[0]
+    alt_flow.set_src(link[2])
+    alt_flow.set_dest(link[0])
     alt_flow.add_packet(packet)
 
     # know that agent is configured we find alt route using ddqn
     while not alt_agent.flow.destination_reached():
-        method_caller(alt_agent, method)
+        method_caller(alt_agent, method,None,1)
     # take new oute and add to old one
     print(alt_agent.flow.get_links())
 

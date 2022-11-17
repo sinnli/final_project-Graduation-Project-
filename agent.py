@@ -28,7 +28,7 @@ class Agent():
         if (alt_flag==0):
              self.flow = adhocnet.flows[flow_id]
         else:
-            self.flow = Data_Flow(1,1,1,1)
+            self.flow = adhocnet.alt_flows[flow_id]
         self.counter = 0
         self.test_time = time.time()
         self.flow.exclude_nodes = np.delete(np.arange(self.adhocnet.n_flows*2), self.flow.dest) # can delete by index
@@ -368,8 +368,8 @@ class Agent():
         route_destination_directly(self)
         return
 
-    def route_neighbor_with_largest_reward(self):
-        route_neighbor_with_largest_reward(self)
+    def route_neighbor_with_largest_reward(self,alt_flag = 0):
+        route_neighbor_with_largest_reward(self,alt_flag)
         return
 
 
@@ -397,4 +397,5 @@ class Agent():
     def get_alt_flow(self):
         return self.flow
 
-
+    def get_flow_id(self):
+        return self.id
