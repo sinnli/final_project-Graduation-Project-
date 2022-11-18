@@ -54,7 +54,7 @@ def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + forme
     deadline = np.random.randint(deadline_time[0], deadline_time[1])
     packet = [amount, deadline, packet_id]
 
-    alt_id = agent.get_flow_id()
+    alt_id = main_agent.get_flow_id()
 
     alt_agent = agent.Agent(adhocnet,alt_id,1)  #without flow id
     alt_flow = alt_agent.get_alt_flow()

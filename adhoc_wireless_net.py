@@ -140,14 +140,14 @@ class AdHoc_Wireless_Net():
         if flow.first_packet():
             # assert self.nodes_on_bands[band, tx] == self.nodes_on_bands[band, rx] == 0
             # assert self.powers[band, tx] == self.powers[band, rx] == 0
-                if tx != rx:  # not a reprobe
-                    level = action[0] // nodes_explored
-                    power = self.transmit_power / (level+1)
-                    self.powers[band, tx] = power
-                    self.nodes_on_bands[band, tx] = 1
-                    self.nodes_on_bands[band, rx] = 1
-                    self.used_bands[band] += 1
-                flow.add_link(tx, band, rx, state, action)
+            if tx != rx:  # not a reprobe
+                level = action[0] // nodes_explored
+                power = self.transmit_power / (level+1)
+                self.powers[band, tx] = power
+                self.nodes_on_bands[band, tx] = 1
+                self.nodes_on_bands[band, rx] = 1
+                self.used_bands[band] += 1
+        flow.add_link(tx, band, rx, state, action)
         return
 
     def get_remain_energy(self):
