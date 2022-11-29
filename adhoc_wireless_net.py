@@ -131,12 +131,12 @@ class AdHoc_Wireless_Net():
         available_bands = np.where(self.nodes_on_bands[:,node_id]==0)[0]
         return available_bands
 
-    def add_link(self, flow_id, tx, band, rx, state, action,alt_flag = 0):
+    def add_link(self, flow_id, tx, band, rx, state, action, alt_flag = 0):
         if alt_flag==1:
             flow = self.alt_flows[flow_id]
+            print("alt flow in adhoc")
         else:
             flow = self.flows[flow_id]
-
         if flow.first_packet():
             # assert self.nodes_on_bands[band, tx] == self.nodes_on_bands[band, rx] == 0
             # assert self.powers[band, tx] == self.powers[band, rx] == 0
@@ -147,7 +147,7 @@ class AdHoc_Wireless_Net():
                 self.nodes_on_bands[band, tx] = 1
                 self.nodes_on_bands[band, rx] = 1
                 self.used_bands[band] += 1
-        flow.add_link(tx, band, rx, state, action)
+        flow.add_link(tx, band, rx, state, action,alt_flag)
         return
 
     def get_remain_energy(self):
@@ -164,6 +164,7 @@ class AdHoc_Wireless_Net():
         return duration_factor * link_factor * self.energy
 
     def clear_flow(self, flow_id):
+        print("in clear flow func $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         flow = self.flows[flow_id]
         for tx, band, rx, _, _ in flow.get_links():
             if tx == rx: # reprobe

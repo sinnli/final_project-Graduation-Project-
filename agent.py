@@ -55,11 +55,15 @@ class Agent():
             print("Inititalized alternative agent.")
 
     def reset(self,alt_flag = 0):
+        print("the alt flag in reset is "+str(alt_flag))
         if alt_flag==0:
+            print("reset of regular agent with alt flag ")
             self.adhocnet.clear_flow(self.id)
+            self.flow.exclude_nodes = np.delete(np.arange(self.adhocnet.n_flows * 2),
+                                                self.flow.dest)  # can delete by index
         else:
-            self.flow.reset()
-        self.flow.exclude_nodes = np.delete(np.arange(self.adhocnet.n_flows*2), self.flow.dest) # can delete by index
+            self.flow.reset(alt_flag = 1)
+            print("reset alt_agent")
         return
 
     def main_net_predict(self, states):  # Expect states shape: (minibatch_size X state_dim)
@@ -399,3 +403,5 @@ class Agent():
 
     def get_flow_id(self):
         return self.id
+
+

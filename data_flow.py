@@ -9,8 +9,8 @@ FLOW_COLORS = ['r', 'g', 'b']*10
 
 class Data_Flow():
     def __init__(self, flow_id, src, dest, alt_flag = 0):
+        self.flow_id = flow_id
         if alt_flag==0:
-            self.flow_id = flow_id
             self.plot_color = FLOW_COLORS[flow_id]
         self.src = src
         self.dest = dest
@@ -32,8 +32,13 @@ class Data_Flow():
 
 
 
-    def add_link(self, tx, band, rx, state, action):  # return true if this link end a packet.
-        assert tx == self.frontier_node
+    def add_link(self, tx, band, rx, state, action,alt_flag = 0):  # return true if this link end a packet.
+
+        assert (tx == self.frontier_node, f"the tx is "+str(tx)+"the frontier node is "+str(self.frontier_node))  #our Problemmmm
+       # print(f"the tx is "+str(tx)+"the frontier node is "+str(self.frontier_node))
+        if (alt_flag==1):
+           print("debug")
+
         deliver_packet, _ = self.deliver_packet()
         if self.first_packet():
             self._links.append((tx, band, rx, state, action))
@@ -127,7 +132,7 @@ class Data_Flow():
         links = self._links
         return links[self.packet_link_index]
 
-    def reset(self):
+    def reset(self,alt_flag =0):
         self._links = []
         self.exclude_nodes = None
         self.change_deadline("mul")
@@ -139,6 +144,9 @@ class Data_Flow():
         self.frontier_node = self.src
         self.bottleneck_rate = None
         self._n_reprobes = 0
+        if (alt_flag==1):
+            self.src = 0
+            self.dest = 0
         return
 
     def get_src(self):

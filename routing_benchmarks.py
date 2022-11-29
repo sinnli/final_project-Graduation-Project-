@@ -219,12 +219,15 @@ def route_destination_directly(agent):
     return
 
 def route_neighbor_with_largest_reward(agent,alt_flag = 0):
+
+    # need a additional case for alt_flag = 1
+
     packet, _ = agent.flow.deliver_packet()
     first_packet = agent.flow.first_packet()
     if not first_packet:
         next_link = agent.flow.next_link()
         agent.adhocnet.add_link(flow_id=agent.id, tx=next_link[0], band=next_link[1], \
-                                rx=next_link[2], state=next_link[3], action=next_link[4],alt_flag = 0)
+                                rx=next_link[2], state=next_link[3], action=next_link[4],alt_flag = alt_flag)
         #agent.adhocnet.add_counter()
         return
     available_bands = agent.adhocnet.get_available_bands(agent.flow.frontier_node)
@@ -251,9 +254,9 @@ def route_neighbor_with_largest_reward(agent,alt_flag = 0):
     next_action = [nodes_explored*max_power+neighbor_index, packet]
     if max_reward > 0:
         agent.adhocnet.add_link(flow_id=agent.id, tx=agent.flow.frontier_node, band=max_band,\
-            rx=max_neighbor, state=max_states[band_index], action=next_action)
+            rx=max_neighbor, state=max_states[band_index], action=next_action, alt_flag =alt_flag)
     else:   # Miss the deadline, move to destination
         next_action = [agent.n_actions-1, packet]
         agent.adhocnet.add_link(flow_id=agent.id, tx=agent.flow.frontier_node, band=max_band, \
-                               rx=agent.flow.dest, state=max_states[band_index], action=next_action)
+                               rx=agent.flow.dest, state=max_states[band_index], action=next_action, alt_flag = alt_flag)
     return

@@ -60,14 +60,19 @@ def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + forme
     alt_flow = alt_agent.get_alt_flow()
     alt_flow.set_src(link[2])
     alt_flow.set_dest(link[0])
-    alt_flow.add_packet(packet)
+    alt_flow.add_packet(packet) #the problem is probably in the routing benchmark with the frontier node
+    print("///////////////////////////////////////////the src "+str(link[2])+" and dest "+str(link[0])+" of alt flow id is "+str(alt_id))
+    print("agent src "+str(alt_agent.flow.src)+"agent dst "+str(alt_agent.flow.dest))
 
     # know that agent is configured we find alt route using ddqn
     while not alt_agent.flow.destination_reached():
         method_caller(alt_agent, method,None,1)
+        print("still not reached :||")
     # take new oute and add to old one
     print(alt_agent.flow.get_links())
-
+    #alt_agent.reset(1)
+    del alt_agent
+    print("the main agents destination after alt flow: "+str(main_agent.flow.get_dest()))
     return
 
 # Perform a number of rounds of sequential routing
@@ -102,6 +107,8 @@ def sequential_routing( agents, method, adhocnet):
                     print("the index in links : ",agent.get_bottlenecklink_index())
                     # find alternative route for the bottelneck link
                     find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
+                    #continue
+                    #break
 
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
@@ -110,6 +117,7 @@ def sequential_routing( agents, method, adhocnet):
             method_caller(agent, method)
     # compute bottleneck SINR to determine the routing for the sequential rounds
     for i in range(N_ROUNDS-1):
+        print("%%%%%%%%%%%%%%%%%%    in second part of sequential routing    %%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         bottleneck_rates = []
         for agent in agents:
             agent.process_links(memory=None)
@@ -126,6 +134,7 @@ def sequential_routing( agents, method, adhocnet):
                 method_caller(agent, method)
     for agent in agents:
         agent.process_links(memory=None)
+        print("done with sequential routing")
     return
 
 def evaluate_routing(adhocnet, agents, method, n_layouts):
@@ -133,7 +142,7 @@ def evaluate_routing(adhocnet, agents, method, n_layouts):
     results = []
     for i in range(n_layouts):
         adhocnet.update_layout()
-        sequential_routing(agents, method,adhocnet)
+        sequential_routing(agents, method, adhocnet)
         for agent in agents:
             results.append([agent.flow.bottleneck_rate, len(agent.flow.get_links()),
                             agent.flow.get_number_of_reprobes(), agent.flow.number_reached_packets(),
