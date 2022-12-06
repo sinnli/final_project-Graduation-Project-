@@ -48,31 +48,31 @@ def method_caller(agent, method, visualize_axis=None,alt_flag = 0):
 def find_alt_route(adhocnet, method, main_agent, index):  # num of flows + former flow id
     # find flow_ids, source, destination
     link = main_agent.flow.get_links()[index]
-    # self._links.append((tx, band, rx, state, action))
+    # self._links.append((tx, band, rx, state, action))    _>> tx always 1 ->why??
     packet_id = 1
     amount = np.random.randint(data_size[0], data_size[1])
     deadline = np.random.randint(deadline_time[0], deadline_time[1])
     packet = [amount, deadline, packet_id]
-
     alt_id = main_agent.get_flow_id()
-
     alt_agent = agent.Agent(adhocnet,alt_id,1)  #without flow id
     alt_flow = alt_agent.get_alt_flow()
-    alt_flow.set_src(link[2])
-    alt_flow.set_dest(link[0])
+    alt_flow.set_src(link[0])
+    alt_flow.set_dest(link[2])
     alt_flow.add_packet(packet) #the problem is probably in the routing benchmark with the frontier node
-    print("///////////////////////////////////////////the src "+str(link[2])+" and dest "+str(link[0])+" of alt flow id is "+str(alt_id))
-    print("agent src "+str(alt_agent.flow.src)+"agent dst "+str(alt_agent.flow.dest))
-
+    alt_flow.set_exclude_nodes(main_agent.flow.get_exclude_nodes())  #check if this helps to prevent circles
     # know that agent is configured we find alt route using ddqn
     while not alt_agent.flow.destination_reached():
         method_caller(alt_agent, method,None,1)
-        print("still not reached :||")
     # take new oute and add to old one
-    print(alt_agent.flow.get_links())
-    #alt_agent.reset(1)
-    del alt_agent
-    print("the main agents destination after alt flow: "+str(main_agent.flow.get_dest()))
+    #print(alt_agent.flow.get_links())
+    #repait the link set:
+    links_main_agent = main_agent.flow.get_links()
+    final_main_links = links_main_agent[:index]
+    links_2 = links_main_agent[index+1:]
+    final_main_links.extend(alt_agent.flow.get_links())
+    final_main_links.extend(links_2)
+    main_agent.flow.set_links(final_main_links)
+    alt_agent.reset(1)
     return
 
 # Perform a number of rounds of sequential routing
@@ -90,7 +90,7 @@ def sequential_routing( agents, method, adhocnet):
         current_rate = 0
 
         while not agent.flow.destination_reached():
-            #adhocnet.moving_layout()#moving layout
+            adhocnet.move_layout()
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
@@ -101,14 +101,14 @@ def sequential_routing( agents, method, adhocnet):
                     previous_rate = current_rate
 
                 if (current_rate < previous_rate):
-                    print("bottleneck!!!")
+                    #print("bottleneck!!!")
                     # call function that deals with the bottelneck
                     agent.process_links_find_bottleneck()
-                    print("the index in links : ",agent.get_bottlenecklink_index())
+                    #print("the index in links : ",agent.get_bottlenecklink_index())
                     # find alternative route for the bottelneck link
                     find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
-                    #continue
-                    #break
+                    #break #go to next flow #band
+                    #maybe excluded nodes is problamati too
 
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
@@ -141,7 +141,8 @@ def evaluate_routing(adhocnet, agents, method, n_layouts):
     assert adhocnet.n_flows == len(agents)
     results = []
     for i in range(n_layouts):
-        adhocnet.update_layout()
+        adhocnet.total_del()
+        adhocnet.update_layout() #why is this needed?
         sequential_routing(agents, method, adhocnet)
         for agent in agents:
             results.append([agent.flow.bottleneck_rate, len(agent.flow.get_links()),

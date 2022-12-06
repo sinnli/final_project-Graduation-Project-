@@ -220,8 +220,6 @@ def route_destination_directly(agent):
 
 def route_neighbor_with_largest_reward(agent,alt_flag = 0):
 
-    # need a additional case for alt_flag = 1
-
     packet, _ = agent.flow.deliver_packet()
     first_packet = agent.flow.first_packet()
     if not first_packet:

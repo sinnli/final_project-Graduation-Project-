@@ -91,6 +91,12 @@ if (__name__ == "__main__"):
                     if best_min_bottleneck_rate < min_bottleneck_rate_avg:
                         agents[-1].save_dqn_model()
                         best_min_bottleneck_rate = min_bottleneck_rate_avg
+            adhocnet.total_del()
+
+
+
+
+
     #agents[-1].visualize_non_zero_rewards(memory)
     metrics = np.array(metrics)
     x_vals = metrics[0, :, 0] / 1e3

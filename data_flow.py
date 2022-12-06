@@ -34,11 +34,7 @@ class Data_Flow():
 
     def add_link(self, tx, band, rx, state, action,alt_flag = 0):  # return true if this link end a packet.
 
-        assert (tx == self.frontier_node, f"the tx is "+str(tx)+"the frontier node is "+str(self.frontier_node))  #our Problemmmm
-       # print(f"the tx is "+str(tx)+"the frontier node is "+str(self.frontier_node))
-        if (alt_flag==1):
-           print("debug")
-
+        assert (tx == self.frontier_node, f"the tx is "+str(tx)+"the frontier node is "+str(self.frontier_node))
         deliver_packet, _ = self.deliver_packet()
         if self.first_packet():
             self._links.append((tx, band, rx, state, action))
@@ -157,7 +153,21 @@ class Data_Flow():
 
     def set_src(self,src):
         self.src = src
+        self.frontier_node = src
         return
+
     def set_dest(self,dest):
         self.dest = dest
         return
+
+    def set_links(self,links):
+        self._links = links
+        return
+
+    def set_exclude_nodes(self,exclude_nodes):
+        self.exclude_nodes = exclude_nodes
+        return
+
+    def get_exclude_nodes(self):
+        return self.exclude_nodes
+
