@@ -17,7 +17,7 @@ N_ROUNDS = 2
 METHOD_PLOT_COLORS = cm.rainbow(np.linspace(1,0,len(METHODS)))
 # select Plot type
 # PLOT_TYPE = "SumRate" "Rate" "Reach"
-PLOT_TYPE = "Rate"
+PLOT_TYPE = "SumRate"
 
 def method_caller(agent, method, visualize_axis=None,alt_flag = 0):
     if method == 'DDQN_Q_Novel':
@@ -90,7 +90,7 @@ def sequential_routing( agents, method, adhocnet):
         current_rate = 0
 
         while not agent.flow.destination_reached():
-            adhocnet.move_layout()
+            adhocnet.move_layout() # add field lenght if
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
@@ -107,7 +107,6 @@ def sequential_routing( agents, method, adhocnet):
                     #print("the index in links : ",agent.get_bottlenecklink_index())
                     # find alternative route for the bottelneck link
                     find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
-                    #break #go to next flow #band
                     #maybe excluded nodes is problamati too
 
                 prev_num_pkt_reach = num_pkt_reach
@@ -168,9 +167,10 @@ if (__name__ == "__main__"):
 
     if (not args.visualize) and (not args.step):
         all_results = dict()
-        for method in METHODS:
-            print("Evaluating {}...".format(method))
-            all_results[method] = evaluate_routing(adhocnet, agents, method, N_LAYOUTS_TEST)
+       # for method in METHODS:
+           # print("Evaluating {}...".format(method))
+        method = 'Max Reward'
+        all_results[method] = evaluate_routing(adhocnet, agents, method, N_LAYOUTS_TEST) #very lngg
         # plot Sum-Rate and Min-Rate CDF curve
         if PLOT_TYPE == "SumRate":
             xlabel_format = "SumRate"

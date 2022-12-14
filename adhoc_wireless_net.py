@@ -214,11 +214,19 @@ class AdHoc_Wireless_Net():
 
     def move_layout(self):
         #print("The nodes locactions of the network:")
-        #print(self.nodes_locs)
+        # print(self.nodes_locs)
         epsilon1 = np.random.rand(75,2)*10
         epsilon2 = np.random.rand(75,2)*10
         epsilon = epsilon1-epsilon2
         self.nodes_locs+=epsilon
+
+        for node in self.nodes_locs:
+            for i in range(0,2):
+                if (node[i]<0):
+                    node[i] = 0
+                elif (node[i]>self.field_length):
+                    node[i] = self.field_length
+
         return
 
     def total_del(self):
