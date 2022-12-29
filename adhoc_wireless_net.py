@@ -95,7 +95,10 @@ class AdHoc_Wireless_Net():
         self.used_bands = np.zeros(self.n_bands)
         self.powers = np.zeros([self.n_bands, self.n_nodes])
         self.energy = INITIAL_ENERGY
+        numlist = [0,1]
+        self.connectability_list = [[random.choices(numlist,weights=(20,80),k =1)[0] for x in range(self.n_nodes)] for y in range(self.n_nodes)]
         self.update_layout()
+
 
     # Refreshing on a larger time scale
     def update_layout(self):
@@ -233,6 +236,11 @@ class AdHoc_Wireless_Net():
         self.nodes_on_bands = np.zeros([self.n_bands, self.n_nodes])
         self.powers = np.zeros([self.n_bands, self.n_nodes])
         return
+
+    def get_connectability_list(self):
+        #for 1 in the matirx the connectivity between the corresponding nodes is possibale
+        #otherwise not
+        return self.connectability_list
 
 
 if __name__ == "__main__":

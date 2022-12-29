@@ -90,7 +90,7 @@ def sequential_routing( agents, method, adhocnet):
         current_rate = 0
 
         while not agent.flow.destination_reached():
-            adhocnet.move_layout() # add field lenght if
+            #adhocnet.move_layout() # add field lenght if
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
@@ -107,7 +107,6 @@ def sequential_routing( agents, method, adhocnet):
                     #print("the index in links : ",agent.get_bottlenecklink_index())
                     # find alternative route for the bottelneck link
                     find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
-                    #maybe excluded nodes is problamati too
 
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent

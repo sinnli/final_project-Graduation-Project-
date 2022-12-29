@@ -146,6 +146,18 @@ class Agent():
         available_neighbors = self.remove_nodes_excluded(available_neighbors, self.flow.exclude_nodes)
         fully_occupied_neighbors = np.where(np.min(self.adhocnet.nodes_on_bands[available_bands, :], axis=0) == 1)[0]
         available_neighbors = self.remove_nodes_excluded(available_neighbors, fully_occupied_neighbors)
+        #check connectivity matrix and exclude nodes according to frontier node
+        connectability_list = self.adhocnet.get_connectability_list()[self.flow.frontier_node]
+        #dest_node  = self.flow.get
+        non_connectable_list = []
+        for i in range(0, len(connectability_list)):
+            if(connectability_list[i] == 0):
+                non_connectable_list.append(i)
+
+        pre_available_neighbors = self.remove_nodes_excluded(available_neighbors, non_connectable_list)
+        if(np.size(pre_available_neighbors) > 0):
+            available_neighbors = pre_available_neighbors
+
         # check if any bands link require higher signal than transmit_power
         available_bands = np.array(available_bands)
         for neighbor in available_neighbors:
