@@ -155,8 +155,13 @@ class Agent():
                 non_connectable_list.append(i)
 
         pre_available_neighbors = self.remove_nodes_excluded(available_neighbors, non_connectable_list)
-        if(np.size(pre_available_neighbors) > 0):
-            available_neighbors = pre_available_neighbors
+        #if(np.size(pre_available_neighbors) > 0):
+        #    available_neighbors = pre_available_neighbors
+        available_neighbors = pre_available_neighbors 
+        
+        # If the error :AssertionError: Shouldn't exhaust node ever (at least the destination node is there)! 
+        # is occuring then take the lines 158-159 should be taken out of commend
+        # and put the line 160 in command
 
         # check if any bands link require higher signal than transmit_power
         available_bands = np.array(available_bands)
