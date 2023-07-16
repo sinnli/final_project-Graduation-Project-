@@ -1,11 +1,9 @@
 
 # Class for Ad-hoc wireless network
 import time
-
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import itertools
-
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from system_parameters import *
@@ -13,7 +11,7 @@ from data_flow import Data_Flow
 
 def prepare_tx_rx_location_ratios(n_flows, separation_fraction):
     n1 = int(np.ceil(n_flows/2))
-    n2 = n_flows - n1
+    n2 = int(np.ceil(n_flows)) - n1#n_flows - n1
     tx_locs_ratios = []
     rx_locs_ratios = []
     for i in range(n1):
@@ -38,11 +36,11 @@ def prepare_tx_rx_location_ratios(n_flows, separation_fraction):
 
 AdHocLayoutSettings = {
     'A': {"field_length": 1000,
-          "n_flows": 2,
-          "n_bands": 8,
+          "n_flows": 5,
+          "n_bands": 15,
           "transmit_power": TX_POWER,
-          "txs_rxs_length_ratios": prepare_tx_rx_location_ratios(n_flows=2, separation_fraction=1/5),
-          "mobile_nodes_distrib": [6, 8, 7, 6, 5, 10, 8, 9, 6]
+          "txs_rxs_length_ratios": prepare_tx_rx_location_ratios(n_flows=5, separation_fraction=1/5),
+          "mobile_nodes_distrib":[10, 8, 10, 6, 5, 1, 8, 9, 6]
           },
     'B': {"field_length": 5000,
           "n_flows": 10,
@@ -72,7 +70,7 @@ class AdHoc_Wireless_Net():
     def __init__(self):
         self.counter = 0
         self.test_time = time.time()
-        self.layout_setting = AdHocLayoutSettings['D']
+        self.layout_setting = AdHocLayoutSettings['A']
         self.field_length = self.layout_setting['field_length']
         self.n_flows = self.layout_setting['n_flows']
         self.transmit_power = self.layout_setting['transmit_power']
@@ -159,7 +157,7 @@ class AdHoc_Wireless_Net():
         for flow in self.flows:
             links = flow.get_links()
             link_factor += len(links)
-            duration_time.append(np.int(flow.get_start_time() - now))
+            duration_time.append(np.float64(flow.get_start_time() - now))
         link_factor = np.power(10, -(link_factor/10))
         duration = np.mean(duration_time)
         duration_factor = np.power(10, -(duration / 10))
@@ -218,8 +216,8 @@ class AdHoc_Wireless_Net():
     def move_layout(self):
         #print("The nodes locactions of the network:")
         # print(self.nodes_locs)
-        epsilon1 = np.random.rand(75,2)*10
-        epsilon2 = np.random.rand(75,2)*10
+        epsilon1 = np.random.rand(73,2)*10
+        epsilon2 = np.random.rand(73,2)*10
         epsilon = epsilon1-epsilon2
         self.nodes_locs+=epsilon
 

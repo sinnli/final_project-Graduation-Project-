@@ -43,7 +43,7 @@ class Agent():
         self.loss_func = nn.SmoothL1Loss(reduction='none')
         self.optimizer = optim.Adam(self._main_net.parameters(), lr=1e-4)
         if os.path.exists(self._model_path):
-            print("Agent {}: Loading pre-trained model from: {}".format(self.id, self._model_path))
+            #print("Agent {}: Loading pre-trained model from: {}".format(self.id, self._model_path))
             self._main_net.load_state_dict(torch.load(self._model_path))
             self._target_net.load_state_dict(torch.load(self._model_path))
         else:
@@ -51,8 +51,9 @@ class Agent():
                 print("Agent {}: No pre-trained model found. Working from scratch.".format(self.id))
         if (alt_flag==0):
             print("Initialized agent for flow {}!".format(flow_id))
-        else:
-            print("Inititalized alternative agent.")
+        #else:
+
+            #print("Inititalized alternative agent.")
 
     def reset(self,alt_flag = 0):
         if alt_flag==0:
@@ -153,16 +154,10 @@ class Agent():
         for i in range(0, len(connectability_list)):
             if(connectability_list[i] == 0):
                 non_connectable_list.append(i)
-
         pre_available_neighbors = self.remove_nodes_excluded(available_neighbors, non_connectable_list)
-        #if(np.size(pre_available_neighbors) > 0):
-        #    available_neighbors = pre_available_neighbors
-        available_neighbors = pre_available_neighbors 
-        
-        # If the error :AssertionError: Shouldn't exhaust node ever (at least the destination node is there)! 
-        # is occuring then take the lines 158-159 should be taken out of commend
-        # and put the line 160 in command
-
+        if(np.size(pre_available_neighbors) > 0):
+            available_neighbors = pre_available_neighbors
+        #available_neighbors = pre_available_neighbors
         # check if any bands link require higher signal than transmit_power
         available_bands = np.array(available_bands)
         for neighbor in available_neighbors:

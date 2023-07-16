@@ -12,12 +12,12 @@ import matplotlib.cm as cm
 from data_flow import Data_Flow
 import time
 # 'DDQN_Q_Novel',
-METHODS = ['Max Reward', 'Closest to Destination', 'Best Direction', "Least Interfered", 'Strongest Neighbor', 'Largest Data Rate', 'Destination Directly']
+METHODS = ['Max Reward']#, 'Closest to Destination', 'Best Direction', "Least Interfered", 'Strongest Neighbor', 'Largest Data Rate', 'Destination Directly']
 N_ROUNDS = 2
 METHOD_PLOT_COLORS = cm.rainbow(np.linspace(1,0,len(METHODS)))
 # select Plot type
-# PLOT_TYPE = "SumRate" "Rate" "Reach"
-PLOT_TYPE = "SumRate"
+# PLOT_TYPE = "SumRate" "Rate" "Reach" "Power"
+PLOT_TYPE = "Power"
 
 def method_caller(agent, method, visualize_axis=None,alt_flag = 0):
     if method == 'DDQN_Q_Novel':
@@ -88,34 +88,39 @@ def sequential_routing( agents, method, adhocnet):
         prev_num_pkt_sent = 0
         previous_rate = 0
         current_rate = 0
+        counter = 0
 
         while not agent.flow.destination_reached():
-            #adhocnet.move_layout() # add field lenght if
+            counter = 0
+            adhocnet.move_layout() # add field lenght if
             current_num_pkt_sent = agent.flow.deliver_index
             pkt_sent_delta = current_num_pkt_sent - prev_num_pkt_sent
             num_pkt_reach = agent.flow.number_reached_packets()
 
             if (pkt_sent_delta == 50):
                 current_rate = (num_pkt_reach - prev_num_pkt_reach) / pkt_sent_delta
+                #print(current_rate)
                 if(previous_rate == 0):
                     previous_rate = current_rate
 
-                if (current_rate < previous_rate):
-                    #print("bottleneck!!!")
+                if (current_rate < previous_rate and current_rate<0.2):
+                    print("bottleneck!!!")
                     # call function that deals with the bottelneck
                     agent.process_links_find_bottleneck()
                     #print("the index in links : ",agent.get_bottlenecklink_index())
                     # find alternative route for the bottelneck link
                     find_alt_route(adhocnet,method,agent,agent.get_bottlenecklink_index())
+                    counter +=1
 
                 prev_num_pkt_reach = num_pkt_reach
                 prev_num_pkt_sent = current_num_pkt_sent
                 previous_rate = current_rate
+                #print(f"counter is {counter}")
 
             method_caller(agent, method)
     # compute bottleneck SINR to determine the routing for the sequential rounds
     for i in range(N_ROUNDS-1):
-        print("%%%%%%%%%%%%%%%%%%    in second part of sequential routing    %%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        #print("%%%%%%%%%%%%%%%%%%    in second part of sequential routing    %%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         bottleneck_rates = []
         for agent in agents:
             agent.process_links(memory=None)
@@ -132,7 +137,7 @@ def sequential_routing( agents, method, adhocnet):
                 method_caller(agent, method)
     for agent in agents:
         agent.process_links(memory=None)
-        print("done with sequential routing")
+        #print("done with sequential routing")
     return
 
 def evaluate_routing(adhocnet, agents, method, n_layouts):
@@ -177,6 +182,9 @@ if (__name__ == "__main__"):
             xlabel_format = "Rate"
         elif PLOT_TYPE == "Reach":
             xlabel_format = "Reach In time Packets"
+        elif PLOT_TYPE == "Power":
+            xlabel_format = "Power"
+
         else:
             print(f"Invalid plot type {PLOT_TYPE}!")
             exit(1)
@@ -207,6 +215,13 @@ if (__name__ == "__main__"):
                 plt.plot(np.sort(reached_packets), np.arange(1, N_LAYOUTS_TEST + 1) / (N_LAYOUTS_TEST),
                          c=METHOD_PLOT_COLORS[i], label=method)
                 plot_upperbound = max(np.max(reached_packets), plot_upperbound)
+            elif PLOT_TYPE == "Power":
+                linestyles = [':', '', '-.', 'dashdot', 'solid']
+                # total_power = np.where(np.isnan(total_power), 0, total_power)
+                plt.plot(np.sort(total_power.flatten()) / 1e6,
+                         np.arange(1, N_LAYOUTS_TEST * adhocnet.n_flows + 1) / (N_LAYOUTS_TEST * adhocnet.n_flows),
+                         c=METHOD_PLOT_COLORS[i], label=method, linestyle=linestyles[METHODS.index(method)])
+                plot_upperbound = max(total_power[0][0] / 1e6, plot_upperbound)
             else:
                 print(f"Invalid plot type {PLOT_TYPE}!")
                 exit(1)
